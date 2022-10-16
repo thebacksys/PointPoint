@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\User;
+use App\Models\User;
 use Auth;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -19,13 +19,15 @@ class LoginController extends Controller
     public function handleLineCallback()
     {
         try {
-            $user = Socialite::driver('line')->user();
-            $user = User::where('provider', 'line')->where('provider_id', $user->id)->first();
+            $providerUser = Socialite::driver('line')->user();
+            $user = User::where('provider', 'line')->where('provider_id', $providerUser->id)->first();
             if (!$user) {
                 $user = new User();
-                $user->name = $user->name;
-                $user->email = $user->email;
-                $user->avatar = $user->avatar;
+                $user->name = $providerUser->name;
+                $user->email = $providerUser->email;
+                $user->avatar = $providerUser->avatar;
+                $user->provider = 'line';
+                $user->provider_id = $providerUser->id;
                 $user->save();
             }
             Auth::login($user);
